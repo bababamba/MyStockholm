@@ -13,6 +13,8 @@ public class NPC : MonoBehaviour, IDropHandler
     public float horizontalSpeed = 100f; // 오른쪽 이동 속도
     public float amplitude = 20f; // 위아래 움직임 크기
 
+    public bool canMove;
+
     private Vector3 startPosition;
     [SerializeField]
     private Image face;
@@ -24,11 +26,15 @@ public class NPC : MonoBehaviour, IDropHandler
     [SerializeField]
     GameObject needyPrefab;
     private needy[] needys;
+
+    public int rewardType;
+    public int rewardCount;
     
     
     // Start is called before the first frame update
     void Start()
     {
+        canMove = false;
         needys = GetComponentsInChildren<needy>();
         startPosition = transform.position;
     }
@@ -36,9 +42,10 @@ public class NPC : MonoBehaviour, IDropHandler
     // Update is called once per frame
     void Update()
     {
+        if(canMove)
         GoLeft();
     }
-    public void init(int number)
+    public void init(int number, int _rewardT,int _rewardC)
     {
         numberOfNeedy = number;
         for(int i=0;i<number;i++)
@@ -47,6 +54,8 @@ public class NPC : MonoBehaviour, IDropHandler
             needyObject.transform.SetParent(needyGreed.transform,false);
             needyObject.GetComponent<needy>().init(1, i+2, 1);
         }
+        rewardType = _rewardT;
+        rewardCount = _rewardC;
     }
     public void OnDrop(PointerEventData eventData)
     {
@@ -80,6 +89,13 @@ public class NPC : MonoBehaviour, IDropHandler
     public void needyClear()
     {
         numberOfNeedy--;
+        if (numberOfNeedy == 0)
+        {
+            canMove = true;
+            transform.parent.GetComponent<NPCController>().satisfied(this);
+            Destroy(this, 10);
+        
+        }
     }
     public void GoLeft()
     {

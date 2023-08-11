@@ -109,9 +109,11 @@ public class slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
     {
         int _tempItemType = itemType;
         int _tempItemLevel = itemLevel;
-       
-        AddItem(dragSlot.instance.dragslot.itemType);
-        dragSlot.instance.dragslot.ClearSlot();
+        if (dragSlot.instance.dragslot != this)
+        {
+            AddItem(dragSlot.instance.dragslot.itemType);
+            dragSlot.instance.dragslot.ClearSlot();
+        }
 
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 public class inventory : MonoBehaviour
 {
@@ -25,22 +26,31 @@ public class inventory : MonoBehaviour
     [SerializeField]
     private slot[] slots;  // ½½·Ôµé ¹è¿­
 
-    int numberOfNPC = 3;
+    private NPCController controller;
+    int numberOfNPC = 20;
 
     void Start()
     {
         slots = go_SlotsParent.GetComponentsInChildren<slot>();
+        controller = go_NPCParent.GetComponent<NPCController>();
         slots[5].AddItem(100);
         //gameObject.SetActive(false);
         GameObject nPC = Instantiate(NPCPrefab, new Vector3(-301.7f, 676.7f, 0f), Quaternion.identity);
         nPC.transform.SetParent(go_NPCParent.transform, false);
-        nPC.GetComponent<NPC>().init(2);
-        for (int i = 0; i < numberOfNPC; i++)
+        nPC.GetComponent<NPC>().init(2,1,10);
+        for (int i = 0; i < 2; i++)
         {
             GameObject nPCi = Instantiate(NPCPrefab, new Vector3(-301.7f + 297*(i+1), 676.7f, 0f), Quaternion.identity);
             nPCi.transform.SetParent( go_NPCParent.transform,false);
-            nPCi.GetComponent<NPC>().init(2);
+            nPCi.GetComponent<NPC>().init(2, 1, 10);
         }
+        for (int i = 0; i < numberOfNPC; i++)
+        {
+            GameObject nPCi = Instantiate(NPCPrefab, new Vector3(-301.7f + 297 *4, 676.7f, 0f), Quaternion.identity);
+            nPCi.transform.SetParent(go_NPCParent.transform, false);
+            nPCi.GetComponent<NPC>().init(2, 1, 10);
+        }
+        controller.init();
     }
     
     public void OpenInventory()
