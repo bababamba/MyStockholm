@@ -15,12 +15,12 @@ public class needy : MonoBehaviour
     TextMeshProUGUI amountText;
     NPC owner;
     [SerializeField]
-    inventory inventory;
+    inventoryExtream inventory;
 
     // Start is called before the first frame update
     void Start()
     {
-        inventory = GameObject.Find("MergeGame").GetComponent<inventory>();
+        inventory = GameObject.Find("MergeGameExtream").GetComponent<inventoryExtream>();
         itemImage.sprite = inventory.getImageOfItem(needType, needLevel);
         owner = transform.parent.parent.GetComponent<NPC>();    
     }

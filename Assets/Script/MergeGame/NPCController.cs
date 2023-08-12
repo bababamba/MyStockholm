@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class NPCController : MonoBehaviour
@@ -12,6 +13,9 @@ public class NPCController : MonoBehaviour
 
     [SerializeField]
     private Sprite[] NPCImage;
+
+
+    public bool isBoss = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,50 +27,78 @@ public class NPCController : MonoBehaviour
     {
       
         //-301.7f 297f
-        if (N1.GetComponent<RectTransform>().anchoredPosition.x < -288f && N1.GetComponent<RectTransform>().anchoredPosition.x > -312f && N1.numberOfNeedy != 0)
+        if (N1 != null && N1.GetComponent<RectTransform>().anchoredPosition.x < -288f && N1.GetComponent<RectTransform>().anchoredPosition.x > -312f && N1.numberOfNeedy != 0)
         {
             N1.canMove = false;
             N1.GetComponent<RectTransform>().anchoredPosition = new Vector2(-301.7f, 676.7f);
         }
-        if (N2.GetComponent<RectTransform>().anchoredPosition.x < 9f && N2.GetComponent<RectTransform>().anchoredPosition.x > -17f && N2.numberOfNeedy != 0)
+        if (N2 != null && N2.GetComponent<RectTransform>().anchoredPosition.x < 9f && N2.GetComponent<RectTransform>().anchoredPosition.x > -17f && N2.numberOfNeedy != 0)
         {
             N2.canMove = false;
             N2.GetComponent<RectTransform>().anchoredPosition = new Vector2(-4.7f, 676.7f);
         }
-        if (N3.GetComponent<RectTransform>().anchoredPosition.x < 299f && N3.GetComponent<RectTransform>().anchoredPosition.x > 280f && N3.numberOfNeedy != 0)
+        if (N3!=null && N3.GetComponent<RectTransform>().anchoredPosition.x < 299f && N3.GetComponent<RectTransform>().anchoredPosition.x > 280f && N3.numberOfNeedy != 0)
         {
             N3.canMove = false;
             N3.GetComponent<RectTransform>().anchoredPosition = new Vector2(292.3f, 676.7f);
         }
-
-
     }
 
     public void satisfied(NPC P)
     {
         if (N1 == P)
         {
-            N1 = N2;
+            if (N2 == null && N3 == null)
+            {
+                Debug.Log("Clear!");
+                transform.parent.GetComponent<inventoryExtream>().Clear();
+                isBoss = false;
+            }
+
+            if (N2 != null)
+                N1 = N2;
+            N2 = null;
+            if(N3!=null)
             N2 = N3;
-            N3 = nPCs[curNum];
-            curNum++;
+
+            N3 = null;
+            if (nPCs.Length !=curNum)
+            {
+                N3 = nPCs[curNum];
+                curNum++;
+                N3.canMove = true;
+            }
+            
             N1.canMove = true;
-            N2.canMove = true;
-            N3.canMove = true;
+            if (N2 != null)
+                N2.canMove = true;
+            
         }
         if (N2 == P)
         {
-            N2 = N3; 
-            N3 = nPCs[curNum];
-            curNum++;
-            N2.canMove = true;
-            N3.canMove = true;
+            N2 = null;
+            if (N3 != null)
+                N2 = N3;
+            N3 = null;
+            if (nPCs.Length != curNum)
+            {
+                N3 = nPCs[curNum];
+                curNum++;
+                N3.canMove = true;
+            }
+            if (N2 != null)
+                N2.canMove = true;
+            
         }
         if (N3 == P)
         {
-            N3 = nPCs[curNum];
-            N3.canMove = true;
-            curNum++;
+            N3 = null;
+            if (nPCs.Length != curNum)
+            {
+                N3 = nPCs[curNum];
+                curNum++;
+                N3.canMove = true;
+            }
         }
 
     }
@@ -79,9 +111,17 @@ public class NPCController : MonoBehaviour
     }
     public Sprite getNPCFace(int age)
     {
-        int temp = Random.Range(0, 6);
-        temp += age * 6;
+        int temp;
+        if (age == 4) {
+            temp = Random.Range(0, 18);
+            return NPCImage[temp];
+        }
+        else {
+            temp = Random.Range(0, 6);
+            temp += ((age - 1) * 6);
 
-        return NPCImage[temp];
+            return NPCImage[temp];
+        
+        } 
     }
 }

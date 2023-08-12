@@ -14,13 +14,13 @@ public class slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
 
 
     [SerializeField]
-    private inventory inventory;
+    private inventoryExtream inventory;
 
     private int levelLimit = 3;
 
     void Start()
     {
-        inventory = GameObject.Find("MergeGame").GetComponent<inventory>();
+        inventory = GameObject.Find("MergeGameExtream").GetComponent<inventoryExtream>();
     }
     // 아이템 이미지의 투명도 조절
     private void SetColor(float _alpha)
@@ -57,6 +57,7 @@ public class slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
         itemType = 0;
         itemLevel = 0;
         itemImage.sprite = null;
+        itemImage.GetComponent<RectTransform>().sizeDelta = new Vector2(120f,120f);
         SetColor(0);
     }
     public void OnPointerClick(PointerEventData eventData)
@@ -66,16 +67,16 @@ public class slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
             if (itemType == 100)
                 inventory.AcquireItem(1);
             if (itemType == 101)
-                inventory.AcquireItem(4);
+                inventory.AcquireItem(2);
             if (itemType == 102)
-                inventory.AcquireItem(7);
+                inventory.AcquireItem(3);
             if (itemType == 103)
-                inventory.AcquireItem(10);
+                inventory.AcquireItem(4);
         }
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (itemType != 0 && itemType!=13)
+        if (itemType != 0 && itemType!=5)
         {
             dragSlot.instance.dragslot = this;
             dragSlot.instance.DragSetImage(itemImage);

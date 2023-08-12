@@ -33,14 +33,17 @@ public class inventory : MonoBehaviour
     private slot[] slots;  // ΩΩ∑‘µÈ πËø≠
 
     private NPCController controller;
-    int numberOfNPC = 20;
+
+    public int BPearned= 0;
 
     void Start()
     {
         List<List<int>> questPool = ReadCSV(csvFile);
         slots = go_SlotsParent.GetComponentsInChildren<slot>();
         controller = go_NPCParent.GetComponent<NPCController>();
-        slots[5].AddItem(100);
+        initBorad();
+        //slots[5].AddItem(100);
+        AcquireItem(100);
         //gameObject.SetActive(false);
         GameObject nPC = Instantiate(NPCPrefab, new Vector3(-301.7f, 676.7f, 0f), Quaternion.identity);
         nPC.transform.SetParent(go_NPCParent.transform, false);
@@ -68,7 +71,7 @@ public class inventory : MonoBehaviour
         go_InventoryBase.SetActive(false);
     }
     
-    public void AcquireItem(int _item, int _count = 1)
+    public void AcquireItem(int _item)
     {List<int> tempList = new List<int>();
 
         for (int i = 0; i < slots.Length; i++)//∑£¥˝«— ∫Û ¿ßƒ°ø° æ∆¿Ã≈€ ∂≥±∏±‚
@@ -81,14 +84,23 @@ public class inventory : MonoBehaviour
         if (tempList.Count > 0)
         {
             int random = Random.Range(0, tempList.Count);
-            slots[tempList[random]].AddItem(1);
+            slots[tempList[random]].AddItem(_item);
         }
         else
             Debug.Log("∆«¿Ã ≤À√°Ω¿¥œ¥Ÿ!");
     }
     public Sprite getImageOfItem(int _type, int _level)
-    {if(_type == 100)
+    {if (_type == 100)
             return itemImage[0];
+    else if (_type == 101)
+        return itemImage[16];
+    else if (_type == 102)
+        return itemImage[17];
+    else if (_type == 103)
+        return itemImage[18];
+    else if(_type == 5)
+            return itemImage[13 + Random.Range(0,2)];
+        
     else
         return itemImage[(_type - 1) * itemTypes + _level];
     }
@@ -135,6 +147,75 @@ public class inventory : MonoBehaviour
                 nPCi.GetComponent<NPC>().face.sprite = controller.getNPCFace(2);
             else
                 nPCi.GetComponent<NPC>().face.sprite = controller.getNPCFace(3);
+        }
+    }
+    public void getBP()
+    {
+        BPearned++;
+        switch (BPearned)
+        {
+
+            case 3:
+                slots[19].ClearSlot();
+                slots[34].ClearSlot();
+                AcquireItem(101);
+                break;
+            case 7:
+                slots[14].ClearSlot();
+                slots[15].ClearSlot();
+                slots[22].ClearSlot();
+                slots[23].ClearSlot();
+                slots[29].ClearSlot();
+                
+                AcquireItem(102);
+                break;
+            case 12:
+                
+                slots[13].ClearSlot();
+                slots[8].ClearSlot();
+                slots[30].ClearSlot();
+                slots[31].ClearSlot();
+                slots[39].ClearSlot();
+
+                AcquireItem(103);
+                break;
+            case 19:
+                clearPaper();
+                break;
+
+            default:
+                break;
+
+        }
+    }
+    void initBorad()
+    {
+        for (int i = 0; i < slots.Length; i++)//∑£¥˝«— ∫Û ¿ßƒ°ø° æ∆¿Ã≈€ ∂≥±∏±‚
+        {
+            if (slots[i].itemType == 0)
+            {
+                slots[i].itemImage.GetComponent<RectTransform>().sizeDelta = new Vector2(150,150);
+                slots[i].AddItem(5);
+            }
+        }
+        slots[20].ClearSlot();
+        slots[21].ClearSlot();
+        slots[25].ClearSlot();
+        slots[26].ClearSlot();
+        slots[27].ClearSlot();
+        slots[28].ClearSlot();
+        slots[32].ClearSlot();
+        slots[33].ClearSlot();
+
+    }
+    void clearPaper()
+    {
+        for (int i = 0; i < slots.Length; i++)//∑£¥˝«— ∫Û ¿ßƒ°ø° æ∆¿Ã≈€ ∂≥±∏±‚
+        {
+            if (slots[i].itemType == 5)
+            { 
+                slots[i].ClearSlot();
+            }
         }
     }
 }

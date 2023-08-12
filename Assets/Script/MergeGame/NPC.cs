@@ -42,7 +42,7 @@ public class NPC : MonoBehaviour, IDropHandler
 
     public GameObject moneyTarget;
     public GameObject bluePTarget;
-    NPCController controller;
+    inventory inven;
 
     // Start is called before the first frame update
     void Start()
@@ -52,6 +52,7 @@ public class NPC : MonoBehaviour, IDropHandler
         startPosition = transform.position;
         moneyTarget = GameObject.Find("MoneyTarget");
         bluePTarget = GameObject.Find("BluePTarget");
+        inven = GameObject.Find("MergeGameExtream").GetComponent<inventory>();
     }
 
     // Update is called once per frame
@@ -68,29 +69,34 @@ public class NPC : MonoBehaviour, IDropHandler
             
             GameObject needyObject = Instantiate(needyPrefab);
             needyObject.transform.SetParent(needyGreed.transform, false);
-            needyObject.GetComponent<needy>().init((need1 / 4) + 1, need1 % 4, 1);
+            //Debug.Log(need1);
+            needyObject.GetComponent<needy>().init(((need1-1)/3)+1, (need1-1) % 3+1 , 1);
         }
         else numberOfNeedy--;
         if (need2 != 0)
         {
+            //Debug.Log(need2);
             GameObject needyObject = Instantiate(needyPrefab);
             needyObject.transform.SetParent(needyGreed.transform, false);
-            needyObject.GetComponent<needy>().init((need2 / 4) + 1, need2 % 4, 1);
+            needyObject.GetComponent<needy>().init(((need2 - 1) / 3) + 1, (need2-1) % 3 + 1, 1);
         }
         else numberOfNeedy--;
         if (need3 != 0)
         {
+            //Debug.Log(need3);
             GameObject needyObject = Instantiate(needyPrefab);
             needyObject.transform.SetParent(needyGreed.transform, false);
-            needyObject.GetComponent<needy>().init((need3 / 4) + 1, need3 % 4, 1);
+            needyObject.GetComponent<needy>().init(((need3 - 1) / 3) + 1, (need3-1) % 3 + 1, 1);
         }
         else numberOfNeedy--;
         rewardType = _rewardT;
         rewardCount = _rewardC;
         if (rewardType == 1)
             Reward.sprite = coinS;
-        else
+        else if (rewardType == 2)
             Reward.sprite = BPS;
+        else
+            Reward.gameObject.SetActive(false);
         
 
     }
@@ -174,7 +180,7 @@ public class NPC : MonoBehaviour, IDropHandler
             Vector3 targetDirection = (moneyTarget.transform.position - coin.transform.position).normalized;
             Rigidbody2D rb = coin.GetComponent<Rigidbody2D>();
             rb.velocity = targetDirection * 8f;
-
+            inven.getBP();
             Destroy(coin, 3f); // 동전이 타겟에 닿지 않으면 일정 시간 후에 제거
         }
     }
