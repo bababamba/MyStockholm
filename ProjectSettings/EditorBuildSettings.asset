@@ -5,9 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Kmc/Scenes/SampleScene.unity
+    guid: dd65d801041e5644e9be030215bc91b0
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 778665a865187394b8a120f58c346fa8, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 1dd2a9f184ffe5d4e8da48f08d34782f, type: 2}

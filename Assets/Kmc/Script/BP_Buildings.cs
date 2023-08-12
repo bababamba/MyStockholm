@@ -6,109 +6,177 @@ using System.Collections;
 public class BP_Buildings : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     private RectTransform itemTransform; // 아이템 위치
-
     [SerializeField] private Transform startParent; // 아이템의 처음 parent
     public Vector3 startPosition; // 아이템의 처음 위치 
     [SerializeField] Transform effectCanvasParent;
-
-    [SerializeField] private RectTransform[] dropAreas; // 해당 아이템이 드랍 가능한 Rect Transform 들
-    public RectTransform selectedArea; // 드래그중 현재 밑에 있는 Rect Transform
-    public bool isInsideDropArea; // 드랍 가능한 위치에 있는가?
-
+    [SerializeField] private RectTransform dropArea;
+    [SerializeField] private RectTransform dropAreaAbove;
+    [SerializeField] private RectTransform dropAreaUnder;
+    [SerializeField] private RectTransform invArea;
     [SerializeField] GameObject buildEffect1;
     [SerializeField] GameObject buildEffect2;
+    public RectTransform currentDropArea;
+    private bool isInsideDropArea;
+
+    public bool isFirstBuilt = true;
 
     private void Start()
     {
         itemTransform = GetComponent<RectTransform>();
-        startPosition = itemTransform.position;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        startPosition = itemTransform.position;
         isInsideDropArea = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        itemTransform.position = eventData.position;
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(eventData.position);
+        itemTransform.position = new Vector3(mousePos.x, mousePos.y, itemTransform.position.z);
 
-        isInsideDropArea = false;
-
-        for (int i = 0; i < dropAreas.Length; i++)
+        if (IsInsideRectTransform(mousePos, dropArea))
         {
-            if (RectTransformUtility.RectangleContainsScreenPoint(dropAreas[i], eventData.position))
-            {
-                selectedArea = dropAreas[i];
-                isInsideDropArea = true;
-
-                startPosition = new Vector2(eventData.position.x, selectedArea.position.y);
-                startParent = this.transform.parent;
-
-                if(selectedArea.name == "TempInventory_")
-                {
-                    this.transform.localScale = new Vector3(1, 1, 1);
-                }
-                else if(selectedArea.name == "LowBuild_")
-                {
-                    this.transform.localScale = new Vector3(2, 2, 2);
-                }
-                else
-                {
-                    this.transform.localScale = new Vector3(1.7f, 1.7f, 1.7f);
-                }
-
-                break;
-            }
+            currentDropArea = dropArea;
+            isInsideDropArea = true;
+            float scaleY = Mathf.Clamp(2 + (dropArea.position.y - mousePos.y), 1, 5) * 2.3f;
+            itemTransform.localScale = new Vector3(scaleY, scaleY, itemTransform.localScale.z);
+        }
+        else if (IsInsideRectTransform(mousePos, invArea))
+        {
+            currentDropArea = invArea;
+            itemTransform.localScale = Vector3.one;
+            isInsideDropArea = true;
+        }
+        else if (IsInsideRectTransform(mousePos, dropAreaAbove))
+        {
+            currentDropArea = dropAreaAbove;
+            isInsideDropArea = true;
+        }
+        else if (IsInsideRectTransform(mousePos, dropAreaUnder))
+        {
+            currentDropArea = dropAreaUnder;
+            isInsideDropArea = true;
+        }
+        else
+        {
+            currentDropArea = null;
+            isInsideDropArea = false;
         }
     }
 
-    IEnumerator Build(Vector2 _placedPos)
+    private bool IsInsideRectTransform(Vector3 point, RectTransform rectTransform)
     {
-        GameObject _effect = Instantiate(buildEffect1);
-        _effect.transform.parent = effectCanvasParent;
-        _effect.transform.position = _placedPos;
+        Vector2 rectMin = rectTransform.rect.min;
+        Vector2 rectMax = rectTransform.rect.max;
+        Vector2 normalizedPoint = rectTransform.InverseTransformPoint(point);
 
-        yield return new WaitForSeconds(1.5f);
-        Destroy(_effect);
+        return normalizedPoint.x >= rectMin.x && normalizedPoint.x <= rectMax.x &&
+               normalizedPoint.y >= rectMin.y && normalizedPoint.y <= rectMax.y;
+    }
 
-        GameObject _effect2 = Instantiate(buildEffect2);
-        _effect2.transform.position = _placedPos;
-        _effect2.transform.parent = effectCanvasParent;
+    IEnumerator Build(Vector3 _placedPos, Vector3 _effectPos)
+    {
+        if (currentDropArea == dropArea)
+        {
+            if (isFirstBuilt == true)
+            {
+                isFirstBuilt = false;
+                GameObject effect1 = Instantiate(buildEffect1);
+                effect1.transform.position = _effectPos;
+                effect1.transform.localScale = itemTransform.localScale / 2;
+                effect1.transform.parent = effectCanvasParent;
 
-        Destroy(_effect2, 2f);
-        
-        itemTransform.GetComponent<Image>().enabled = true;
-        itemTransform.position = _placedPos;
-        itemTransform.SetParent(selectedArea);
-        itemTransform.SetAsLastSibling();
+                yield return new WaitForSeconds(1f);
+                Destroy(effect1);
+
+                GameObject effect2 = Instantiate(buildEffect2);
+                effect2.transform.position = _effectPos;
+                effect2.transform.localScale = itemTransform.localScale / 2;
+                effect2.transform.parent = effectCanvasParent;
+                Destroy(effect2, 1f);
+            }
+
+            itemTransform.GetComponent<Image>().enabled = true;
+            itemTransform.SetParent(dropArea, false);
+            itemTransform.SetAsLastSibling();
+            itemTransform.position = _placedPos;
+        }
+        else
+        {
+            Vector2 _newPos = itemTransform.anchoredPosition;
+            _newPos.y = _placedPos.y;
+            itemTransform.anchoredPosition = _newPos;
+
+            if (isFirstBuilt == true)
+            {
+                isFirstBuilt = false;
+                GameObject effect1 = Instantiate(buildEffect1);
+                effect1.transform.localScale = itemTransform.localScale * 100;
+                effect1.transform.SetParent(effectCanvasParent, false);
+                Vector3 effectPos = new Vector3(_newPos.x, -268, 10); // Set the desired z value here
+                effect1.GetComponent<RectTransform>().anchoredPosition3D = effectPos;
+
+                yield return new WaitForSeconds(1f);
+                Destroy(effect1);
+
+                GameObject effect2 = Instantiate(buildEffect2);
+
+                effect2.transform.localScale = itemTransform.localScale * 100;
+                effect2.transform.SetParent(effectCanvasParent, false);
+                effect2.GetComponent<RectTransform>().anchoredPosition3D = effectPos;
+            }
+
+            itemTransform.GetComponent<Image>().enabled = true;
+            itemTransform.SetParent(dropArea, false);
+            itemTransform.SetAsLastSibling();
+        }
+
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (isInsideDropArea && selectedArea != null)
-        {   
-            if(selectedArea.name == "TempInventory_")
+        if (isInsideDropArea && currentDropArea != null)
+        {
+            Vector3 _mousePos = Camera.main.ScreenToWorldPoint(eventData.position);
+            Vector3 _placedPos;
+            Vector3 _effectPos;
+
+            if (currentDropArea == dropAreaAbove)
             {
-                itemTransform.position = new Vector2(eventData.position.x, selectedArea.position.y);
-                itemTransform.SetParent(selectedArea);
-                itemTransform.SetAsLastSibling();
+                Debug.Log("Above");
+                _placedPos = new Vector3(_mousePos.x, dropArea.rect.max.y, itemTransform.position.z);
+            }
+            else if (currentDropArea == dropAreaUnder)
+            {
+                Debug.Log("Under");
+                _placedPos = new Vector3(_mousePos.x, dropArea.rect.min.y, itemTransform.position.z);
             }
             else
             {
-                itemTransform.GetComponent<Image>().enabled =false;
-                Vector2 _placedPos = new Vector2(eventData.position.x, selectedArea.position.y);
-                StartCoroutine(Build(_placedPos));
+                Debug.Log("Inside");
+                _placedPos = new Vector3(_mousePos.x, _mousePos.y, itemTransform.position.z);
             }
 
-        }   
-
+            if (currentDropArea == invArea)
+            {
+                itemTransform.SetParent(invArea);
+                itemTransform.SetAsLastSibling();
+                itemTransform.localScale = Vector3.one;
+                itemTransform.anchoredPosition = _placedPos;
+            }
+            else
+            {
+                _effectPos = _placedPos + new Vector3(0, 0, -100);
+                itemTransform.GetComponent<Image>().enabled = false;
+                StartCoroutine(Build(_placedPos, _effectPos));
+            }
+        }
         else
         {
             itemTransform.SetParent(startParent);
             itemTransform.position = startPosition;
         }
     }
-
-    
 }
