@@ -30,11 +30,13 @@ public class needy : MonoBehaviour
     {
         
     }
-    public void init(int  type, int level, int amount)
+    public void init(int  type, int level, int amount = 1)
     {
         amountText.gameObject.SetActive(false);
         needType = type;
-        needLevel = level;  
+        needLevel = level;
+        if (level == 0)
+            needLevel = 3;
         needAmount = amount;
         if (needAmount > 1)
         {

@@ -65,15 +65,22 @@ public class slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
         {
             if (itemType == 100)
                 inventory.AcquireItem(1);
+            if (itemType == 101)
+                inventory.AcquireItem(4);
+            if (itemType == 102)
+                inventory.AcquireItem(7);
+            if (itemType == 103)
+                inventory.AcquireItem(10);
         }
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (itemType != 0)
+        if (itemType != 0 && itemType!=13)
         {
             dragSlot.instance.dragslot = this;
             dragSlot.instance.DragSetImage(itemImage);
-            dragSlot.instance.transform.position = eventData.position;
+            dragSlot.instance.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            dragSlot.instance.transform.position = new Vector3(dragSlot.instance.transform.position.x, dragSlot.instance.transform.position.y, 0);
         }
     }
 
@@ -81,7 +88,8 @@ public class slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
     public void OnDrag(PointerEventData eventData)
     {
         if (itemType != 0)
-            dragSlot.instance.transform.position = eventData.position;
+            dragSlot.instance.transform.position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        dragSlot.instance.transform.position = new Vector3(dragSlot.instance.transform.position.x, dragSlot.instance.transform.position.y, 0);
     }
 
     // 마우스 드래그가 끝났을 때 발생하는 이벤트

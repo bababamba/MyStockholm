@@ -16,7 +16,13 @@ public class inventory : MonoBehaviour
     [SerializeField]
     private GameObject go_NPCParent;
     [SerializeField]
-    private GameObject NPCPrefab;  
+    private GameObject NPCPrefab;
+
+
+    public TextAsset csvFile;
+    public GameObject moneyTarget;
+    
+    public GameObject bluePTarget;
 
 
     [SerializeField]
@@ -31,25 +37,23 @@ public class inventory : MonoBehaviour
 
     void Start()
     {
+        List<List<int>> questPool = ReadCSV(csvFile);
         slots = go_SlotsParent.GetComponentsInChildren<slot>();
         controller = go_NPCParent.GetComponent<NPCController>();
         slots[5].AddItem(100);
         //gameObject.SetActive(false);
         GameObject nPC = Instantiate(NPCPrefab, new Vector3(-301.7f, 676.7f, 0f), Quaternion.identity);
         nPC.transform.SetParent(go_NPCParent.transform, false);
-        nPC.GetComponent<NPC>().init(2,1,10);
+        nPC.GetComponent<NPC>().init(questPool[0][0], questPool[0][1], questPool[0][2] , questPool[0][3], 1);
+        nPC.GetComponent<NPC>().face.sprite = controller.getNPCFace(1);
         for (int i = 0; i < 2; i++)
         {
             GameObject nPCi = Instantiate(NPCPrefab, new Vector3(-301.7f + 297*(i+1), 676.7f, 0f), Quaternion.identity);
             nPCi.transform.SetParent( go_NPCParent.transform,false);
-            nPCi.GetComponent<NPC>().init(2, 1, 10);
+            nPCi.GetComponent<NPC>().init(questPool[i + 1][0], questPool[i + 1][1], questPool[i + 1][2], questPool[i + 1][3], 1);
+            nPCi.GetComponent<NPC>().face.sprite = controller.getNPCFace(1);
         }
-        for (int i = 0; i < numberOfNPC; i++)
-        {
-            GameObject nPCi = Instantiate(NPCPrefab, new Vector3(-301.7f + 297 *4, 676.7f, 0f), Quaternion.identity);
-            nPCi.transform.SetParent(go_NPCParent.transform, false);
-            nPCi.GetComponent<NPC>().init(2, 1, 10);
-        }
+        instantiateFromPool(questPool);
         controller.init();
     }
     
@@ -88,5 +92,49 @@ public class inventory : MonoBehaviour
     else
         return itemImage[(_type - 1) * itemTypes + _level];
     }
+    private List<List<int>> ReadCSV(TextAsset file)
+    {
+        List<List<int>> data = new List<List<int>>();
 
+        string[] lines = file.text.Split('\n');
+        foreach (string line in lines)
+        {
+            Debug.Log(line);
+            string[] values = line.Split(',');
+            
+            List<int> row = new List<int>();
+
+            foreach (string value in values)
+            {
+                int intValue;
+                if (int.TryParse(value, out intValue))
+                {
+                    row.Add(intValue);
+                }
+                else
+                {
+                    Debug.LogError("Failed to parse int value: " + value);
+                }
+            }
+
+            data.Add(row);
+        }
+
+        return data;
+    }
+    private void instantiateFromPool(List<List<int>> pool)
+    {
+        for (int i = 3; i < pool.Count; i++)
+        {
+            GameObject nPCi = Instantiate(NPCPrefab, new Vector3(-301.7f + 297 * 4, 676.7f, 0f), Quaternion.identity);
+            nPCi.transform.SetParent(go_NPCParent.transform, false);
+            nPCi.GetComponent<NPC>().init(pool[i][0], pool[i][1], pool[i][2], pool[i][3], 1);
+            if(i<13)
+                nPCi.GetComponent<NPC>().face.sprite = controller.getNPCFace(1);
+            else if(i<23)
+                nPCi.GetComponent<NPC>().face.sprite = controller.getNPCFace(2);
+            else
+                nPCi.GetComponent<NPC>().face.sprite = controller.getNPCFace(3);
+        }
+    }
 }
